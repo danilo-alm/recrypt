@@ -29,8 +29,8 @@ class CryptoHandler:
         )
         return base64.urlsafe_b64encode(kdf.derive(password_bytes))
 
-    def __handle_file(self, file_path, output_path):
-        with open(file_path, 'rb') as rf:
+    def __handle_file(self, input_path, output_path):
+        with open(input_path, 'rb') as rf:
             data = rf.read()
 
         if self.operation == Operation.ENCRYPT:
@@ -41,7 +41,7 @@ class CryptoHandler:
         with open(output_path, 'wb') as wf:
             wf.write(data)
 
-    def __handle_directory(self, directory_path, output_path):
+    def __handle_directory(self, input_path, output_path):
         if os.path.exists(output_path):
             output_path = os.path.join(output_path, os.path.basename(directory_path))
          
@@ -50,16 +50,34 @@ class CryptoHandler:
         except FileExistsError:
             sys.exit(f'Output directory "{output_path}" already exists.')
 
-        for entry in os.scandir(directory_path):
-            output_path = entry.path if os.path.samefile(directory_path, output_path) \
+        for entry in os.scandir(input_path):
+            output_path = entry.path if os.path.samefile(input_path, output_path) \
                 else os.path.join(output_path, entry.name)
             if entry.is_dir():
                 self.handle_directory(
-                    directory_path=entry.path,
-                    output_path=os.path.join(after_operation_dir_path, entry.name),
+                    input_path=entry.path,
+                    output_path=os.path.join(output_path, entry.name),
                 )
             elif entry.is_file():  # entry can also be symlink
                 self.__handle_file(
                     filepath=entry.path,
                     output_path=output_path
                 )
+    
+    def __handle_path(self, input_path, output_path):
+        if os.path.isdir(input_path):
+            self.__handle_directory(input_path, output_path)
+        elif os.path.isfile(input_path):
+            self.__handle_file(input_path, output_path)
+        else:
+            sys.exit(f'Path "{input_path}" does not exist.')
+
+    def encrypt(self, input_path, output_path):
+        if self.operation != Operation.ENCRYPT:
+            sys.exit('Cannot encrypt with decrypt operation')
+        self.__handle_path(input_path, output_path)
+
+    def decrypt(self, input_path, output_path):
+        if self.operation != Operation.DECRYPT:
+            sys.exit('Cannot decrypt with encrypt operation')
+        self.__handle_path(input_path, output_path)
