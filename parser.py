@@ -13,6 +13,8 @@ overwrite = parser.add_mutually_exclusive_group(required=True)
 overwrite.add_argument('-o', '--output', type=str, help='Output directory/file')
 overwrite.add_argument('--overwrite', action='store_true', help='Overwrite directory/file')
 
-parser.add_argument('-p', '--password', type=str, help='Password to encrypt/decrypt', required=True)
+passkey = parser.add_mutually_exclusive_group(required=True)
+passkey.add_argument('-k', '--key', type=str, help='Key to encrypt/decrypt')
+passkey.add_argument('-p', '--password', type=str, help='Password to encrypt/decrypt', required=True)
 
 args = parser.parse_args()
