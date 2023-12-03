@@ -8,11 +8,14 @@ import os
 
 
 class CryptoHandler:
-    def __init__(self, operation, password):
+    def __init__(self, operation, password=None, key=None):
         if not isinstance(operation, Operation):
             sys.exit('operation must be of type Operation')
         
-        self.key = self.__generate_key_from_password(password)
+        if not (password or key):
+            sys.exit('Either password or key must be provided')
+        
+        self.key = str.encode(key) or self.__generate_key_from_password(password)
         self.fernet = Fernet(self.key)
         self.operation = operation
 
