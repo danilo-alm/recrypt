@@ -15,6 +15,6 @@ overwrite.add_argument('--overwrite', action='store_true', help='Overwrite direc
 
 passkey = parser.add_mutually_exclusive_group(required=True)
 passkey.add_argument('-k', '--key', type=str, help='Key to encrypt/decrypt')
-passkey.add_argument('-p', '--password', type=str, help='Password to encrypt/decrypt', required=True)
+passkey.add_argument('-p', '--password', type=str, help='Password to encrypt/decrypt')
 
 args = parser.parse_args()
