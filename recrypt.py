@@ -1,6 +1,6 @@
-from parser import args
-from crypto_handler import CryptoHandler
-from operation import Operation
+from utils.parser import args
+from utils.crypto_handler import CryptoHandler
+from utils.operation import Operation
 import sys
 
 crypto_handler = CryptoHandler(

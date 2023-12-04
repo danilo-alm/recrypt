@@ -18,7 +18,7 @@ class TestRecrypt(unittest.TestCase):
         self.key = Fernet.generate_key()
 
         self.python_executable = sys.executable
-        self.recrypt_script = os.path.join(os.getcwd(), 'recrypt.py')
+        self.recrypt_script = os.path.join(os.getcwd(), os.path.join('..', 'recrypt.py'))
     
     def call_recrypt(self, action, input_path, output_path=None, key=None,
                      password=None, overwrite=False):

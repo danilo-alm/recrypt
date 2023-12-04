@@ -1,7 +1,7 @@
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.fernet import Fernet
-from operation import Operation
+from .operation import Operation
 import base64
 import sys
 import os
