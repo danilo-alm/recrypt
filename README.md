@@ -57,3 +57,13 @@ python recrypt.py -h
 
 - Make sure to keep your key or password secure, as it will be required for decryption.
 - Use the `--overwrite` option with caution, as it will replace the original files with their encrypted/decrypted versions.
+
+## License
+
+Recrypt is licensed under the [GNU General Public License v3.0](https://github.com/danilo-alm/recrypt/blob/main/LICENSE). You are free to modify and distribute this software in accordance with the terms of the license. For more details, please refer to the [full text of the license](https://www.gnu.org/licenses/gpl-3.0.html).
+
+### Summary of the GNU GPL v3.0
+
+- You are free to run, modify, and share the software.
+- Any modifications you make must be released under the same license when distributing.
+- This software is distributed without any warranty; refer to the license for details.
