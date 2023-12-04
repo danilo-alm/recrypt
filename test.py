@@ -14,12 +14,8 @@ class TestRecrypt(unittest.TestCase):
         self.file1_content = str.encode('I hope you have a nice day')
         self.file2_content = str.encode('I hope you have a nice day too')
 
+        self.password = str.encode('my_secure_password')
         self.key = Fernet.generate_key()
-        self.key_str = self.key.decode('utf-8')
-        self.fernet = Fernet(self.key)
-
-        self.file1_content_encrypted = self.fernet.encrypt(self.file1_content)
-        self.file2_content_encrypted = self.fernet.encrypt(self.file2_content)
 
         self.python_executable = sys.executable
         self.recrypt_script = os.path.join(os.getcwd(), 'recrypt.py')
@@ -63,20 +59,83 @@ class TestRecrypt(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.dir1)
     
-    def test_overwriting(self):
-        self.call_recrypt('encrypt', self.dir1, overwrite=True, key=self.key_str)
-        
+    def print_file_contents(self, text):
+        print(text.center(80, '-'))
         with open(self.file1, 'rb') as rf:
-            self.assertEqual(rf.read(), self.file1_content_encrypted)
+            print(f'File 1: {rf.read()}')
         with open(self.file2, 'rb') as rf:
-            self.assertEqual(rf.read(), self.file2_content_encrypted)
-        
-        self.call_recrypt('decrypt', self.dir1, overwrite=True, key=self.key_str)
+            print(f'File 2: {rf.read()}\n')
+    
+    def make_assertions(self,
+                       action,
+                       file1_path=None,
+                       file2_path=None,
+                       file1_expected_content=None,
+                       file2_expected_content=None):
+        if not (file1_path or file2_path):
+            file1_path = self.file1
+            file2_path = self.file2
 
-        with open(self.file1, 'rb') as rf:
-            self.assertEqual(rf.read(), self.file1_content)
-        with open(self.file2, 'rb') as rf:
-            self.assertEqual(rf.read(), self.file2_content)
+        if not (file1_expected_content or file2_expected_content):
+            file1_expected_content = self.file1_content
+            file2_expected_content = self.file2_content
+
+        if action == 'equal':
+            with open(file1_path, 'rb') as rf:
+                self.assertEqual(rf.read(), file1_expected_content)
+            with open(file2_path, 'rb') as rf:
+                self.assertEqual(rf.read(), file2_expected_content)
+        elif action == 'not_equal':
+            with open(file1_path, 'rb') as rf:
+                self.assertNotEqual(rf.read(), file1_expected_content)
+            with open(file2_path, 'rb') as rf:
+                self.assertNotEqual(rf.read(), file2_expected_content)
+
+    def run_recrypt_test(self,
+                     action,
+                     overwrite,
+                     input_path=None,
+                     key=None,
+                     password=None,
+                     clean_up=False):
+        if not input_path:
+            input_path = self.dir1
+
+        if overwrite:
+            output_path = None
+            file1_path = self.file1
+            file2_path = self.file2
+        else:
+            output_path = input_path + f'_{action}_output'
+            file1_path = os.path.join(output_path, os.path.basename(self.file1))
+            file2_path = os.path.join(output_path,
+                                      os.path.basename(self.dir2),
+                                      os.path.basename(self.file2))
+
+        self.call_recrypt(action, input_path, output_path=output_path, key=key, password=password, overwrite=overwrite)
+        if action == 'encrypt':
+            self.make_assertions('not_equal', file1_path=file1_path, file2_path=file2_path)
+        else:
+            self.make_assertions('equal', file1_path=file1_path, file2_path=file2_path)
+
+        if clean_up:
+            shutil.rmtree(output_path)
+            shutil.rmtree(input_path)
+        else:
+            return output_path
+
+    def test_overwriting_with_password(self):
+        self.run_recrypt_test(action='encrypt', overwrite=True, password=self.password)
+        self.run_recrypt_test(action='decrypt', overwrite=True, password=self.password)
+
+    def test_overwriting_with_key(self):
+        self.run_recrypt_test(action='encrypt', overwrite=True, key=self.key)
+        self.run_recrypt_test(action='decrypt', overwrite=True, key=self.key)
+
+    def test_not_overwriting(self):
+        output = self.run_recrypt_test(action='encrypt', overwrite=False, password=self.password)
+        self.run_recrypt_test(action='decrypt', overwrite=False, input_path=output, password=self.password, clean_up=True)
+
 
 if __name__ == '__main__':
     unittest.main()

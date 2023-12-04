@@ -8,16 +8,13 @@ import os
 
 
 class CryptoHandler:
-    def __init__(self, operation, password=None, key=None):
-        if not isinstance(operation, Operation):
-            sys.exit('operation must be of type Operation')
-        
+    def __init__(self, password=None, key=None):
         if not (password or key):
             sys.exit('Either password or key must be provided')
         
-        self.key = str.encode(key) or self.__generate_key_from_password(password)
+        self.key = str.encode(key) if key else self.__generate_key_from_password(password)
         self.fernet = Fernet(self.key)
-        self.operation = operation
+        self.operation = None
 
     def __generate_key_from_password(self, password):
         password_bytes = str.encode(password)
@@ -42,42 +39,36 @@ class CryptoHandler:
             wf.write(data)
 
     def __handle_directory(self, input_path, output_path):
-        if os.path.exists(output_path):
-            output_path = os.path.join(output_path, os.path.basename(directory_path))
-         
-        try:
-            os.mkdir(output_path)
-        except FileExistsError:
-            sys.exit(f'Output directory "{output_path}" already exists.')
+        os.makedirs(output_path, exist_ok=True)
 
         for entry in os.scandir(input_path):
-            output_path = entry.path if os.path.samefile(input_path, output_path) \
+            new_output_path = entry.path if os.path.samefile(input_path, output_path) \
                 else os.path.join(output_path, entry.name)
             if entry.is_dir():
-                self.handle_directory(
+                self.__handle_directory(
                     input_path=entry.path,
-                    output_path=os.path.join(output_path, entry.name),
+                    output_path=new_output_path,
                 )
             elif entry.is_file():  # entry can also be symlink
                 self.__handle_file(
-                    filepath=entry.path,
-                    output_path=output_path
+                    input_path=entry.path,
+                    output_path=new_output_path
                 )
     
     def __handle_path(self, input_path, output_path):
-        if os.path.isdir(input_path):
+        if not os.path.exists(input_path):
+            sys.exit(f'Path "{input_path}" does not exist.')
+        elif os.path.isdir(input_path):
             self.__handle_directory(input_path, output_path)
         elif os.path.isfile(input_path):
             self.__handle_file(input_path, output_path)
         else:
-            sys.exit(f'Path "{input_path}" does not exist.')
+            sys.exit(f'Path "{input_path}" is not a file or directory.')
 
     def encrypt(self, input_path, output_path):
-        if self.operation != Operation.ENCRYPT:
-            sys.exit('Cannot encrypt with decrypt operation')
+        self.operation = Operation.ENCRYPT
         self.__handle_path(input_path, output_path)
 
     def decrypt(self, input_path, output_path):
-        if self.operation != Operation.DECRYPT:
-            sys.exit('Cannot decrypt with encrypt operation')
+        self.operation = Operation.DECRYPT
         self.__handle_path(input_path, output_path)
