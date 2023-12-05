@@ -40,7 +40,7 @@ class TestRecrypt(unittest.TestCase):
         
         subprocess.call(args)
         
-    def create_temp_file(self, filename, content, directory=None):
+    def create_temp_file(self, content, directory=None):
         file_handle, file_path = mkstemp(dir=directory)
 
         file_descriptor = os.fdopen(file_handle, 'wb')
@@ -53,25 +53,18 @@ class TestRecrypt(unittest.TestCase):
         self.dir1 = mkdtemp()
         self.dir2 = mkdtemp(dir=self.dir1)
 
-        self.file1 = self.create_temp_file('file1', self.file1_content, directory=self.dir1)
-        self.file2 = self.create_temp_file('file2', self.file2_content, directory=self.dir2)
+        self.file1 = self.create_temp_file(self.file1_content, directory=self.dir1)
+        self.file2 = self.create_temp_file(self.file2_content, directory=self.dir2)
     
     def tearDown(self):
         shutil.rmtree(self.dir1)
     
-    def print_file_contents(self, text):
-        print(text.center(80, '-'))
-        with open(self.file1, 'rb') as rf:
-            print(f'File 1: {rf.read()}')
-        with open(self.file2, 'rb') as rf:
-            print(f'File 2: {rf.read()}\n')
-    
     def make_assertions(self,
-                       action,
-                       file1_path=None,
-                       file2_path=None,
-                       file1_expected_content=None,
-                       file2_expected_content=None):
+                        action,
+                        file1_path=None,
+                        file2_path=None,
+                        file1_expected_content=None,
+                        file2_expected_content=None):
         if not (file1_path or file2_path):
             file1_path = self.file1
             file2_path = self.file2
@@ -92,12 +85,12 @@ class TestRecrypt(unittest.TestCase):
                 self.assertNotEqual(rf.read(), file2_expected_content)
 
     def run_recrypt_test(self,
-                     action,
-                     overwrite,
-                     input_path=None,
-                     key=None,
-                     password=None,
-                     clean_up=False):
+                         action,
+                         overwrite,
+                         input_path=None,
+                         key=None,
+                         password=None,
+                         clean_up=False):
         if not input_path:
             input_path = self.dir1
 
