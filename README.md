@@ -22,16 +22,19 @@ python recrypt.py [-e/--encrypt | -d/--decrypt] <directory/file> [-o/--output | 
 
 ### Arguments
 
-- `-e/--encrypt`: Encrypt the specified directory or file.
-- `-d/--decrypt`: Decrypt the specified directory or file.
-  
+- `-e/--encrypt`: Encrypt the specified input directory or file.
+- `-d/--decrypt`: Decrypt the specified input directory or file.
+
 **Choose one of the following for output:**
 - `-o/--output <directory/file>`: Specify the output directory or file for the encrypted/decrypted content.
-- `--overwrite`: Overwrite the original directory or file with the encrypted/decrypted content.
+- `--overwrite`: Overwrite the specified input directory or file with the encrypted/decrypted content.
 
 **Choose one of the following for passkey:**
 - `-k/--key <key>`: Use a specified 32 url-safe base64-encoded key for encryption/decryption.
 - `-p/--password <password>`: Use a specified password for encryption/decryption.
+
+**Positional Argument:**
+- `input`: The file or directory name to be encrypted or decrypted.
 
 ### Examples
 
